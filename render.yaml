@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: tonjam-bot
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python tonjam_bot.py"
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
