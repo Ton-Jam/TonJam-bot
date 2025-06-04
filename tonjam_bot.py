@@ -4,7 +4,7 @@ import aiosqlite
 from telegram import Update, InputMediaPhoto
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("7591465695:AAFMdgh2tCD7nNvLG2DrODjy7wg8MvEWVoA")
 
 DB_PATH = "users.db"
 
