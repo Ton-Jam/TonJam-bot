@@ -44,7 +44,7 @@ async def earn(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 if __name__ == '__main__':
     asyncio.run(init_db())
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app = ApplicationBuilder().token(7591465695:AAFMdgh2tCD7nNvLG2DrODjy7wg8MvEWVoA).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("points", points))
     app.add_handler(CommandHandler("earn", earn))
