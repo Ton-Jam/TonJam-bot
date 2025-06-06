@@ -3,7 +3,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import aiosqlite
 import asyncio
 
-BOT_TOKEN = "7591465695:AAFMdgh2tCD7nNvLG2DrODjy7wg8MvEWVoA"  # Your Bot Token
+BOT_TOKEN = "7591465695:AAFMdgh2tCD7nNvLG2DrODjy7wg8MvEWVoA"
 
 # Initialize the database
 async def init_db():
@@ -44,4 +44,68 @@ async def upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Listen command
 async def listen(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🎧 Streaming coming soon. You’ll
+        "🎧 Streaming coming soon. You’ll jam to Web3 tracks on Tonjam!"
+    )
+
+# Help command
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "📜 Available commands:\n"
+        "/start - Welcome message\n"
+        "/upload - Upload your music\n"
+        "/listen - Explore music\n"
+        "/points - Check your TJ Points\n"
+        "/play - Simulate music play\n"
+        "/help - Show this help message"
+    )
+
+# Points command
+async def points(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.message.from_user
+    async with aiosqlite.connect("tonjam.db") as db:
+        async with db.execute("SELECT tj_points FROM users WHERE telegram_id = ?", (user.id,)) as cursor:
+            row = await cursor.fetchone()
+            points = row[0] if row else 0
+    await update.message.reply_text(f"💰 You have {points} TJ Points.")
+
+# Play command
+async def play(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    caption = (
+        "🎵 Now Playing: *TonJam*\n"
+        "Artist: TON\n\n"
+        "❤️ Add to Favorites\n"
+        "⬇️ Download (coming soon)\n"
+        "▶️ Pause | ⏭️ Next\n"
+        "🔁 Repeat | 🔀 Shuffle\n\n"
+        "💬 Use /comments to share your thoughts!"
+    )
+
+    await update.message.reply_photo(
+        photo="https://cdn.openai.com/chat-assets/snoop-avatar.png",
+        caption=caption,
+        parse_mode="Markdown"
+    )
+
+# Main app
+async def main():
+    await init_db()
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("upload", upload))
+    app.add_handler(CommandHandler("listen", listen))
+    app.add_handler(CommandHandler("points", points))
+    app.add_handler(CommandHandler("play", play))
+    app.add_handler(CommandHandler("help", help_command))
+
+    print("🤖 TonJam Bot is running...")
+    await app.run_polling()
+
+# Entry point
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except RuntimeError:
+        import nest_asyncio
+        nest_asyncio.apply()
+        asyncio.get_event_loop().run_until_complete(main())
