@@ -5,7 +5,7 @@ import aiosqlite
 
 BOT_TOKEN = "7591465695:AAFMdgh2tCD7nNvLG2DrODjy7wg8MvEWVoA"
 
-# Initialize database
+# Initialize DB
 async def init_db():
     async with aiosqlite.connect("tonjam.db") as db:
         await db.execute("""
@@ -18,7 +18,7 @@ async def init_db():
         """)
         await db.commit()
 
-# Commands
+# Bot commands
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
     async with aiosqlite.connect("tonjam.db") as db:
@@ -43,12 +43,12 @@ async def listen(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "📜 Available commands:\n"
-        "/start - Welcome\n"
-        "/upload - Upload music\n"
-        "/listen - Listen to music\n"
-        "/points - Check your TJ Points\n"
-        "/help - Help"
+        "📜 Commands:\n"
+        "/start - Get started\n"
+        "/upload - Upload your music\n"
+        "/listen - Explore songs\n"
+        "/points - View your TJ Points\n"
+        "/help - Show this help"
     )
 
 async def points(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -59,19 +59,20 @@ async def points(update: Update, context: ContextTypes.DEFAULT_TYPE):
             points = row[0] if row else 0
     await update.message.reply_text(f"💰 You have {points} TJ Points.")
 
-# Main
+# Run bot
 async def main():
     await init_db()
-
     app = ApplicationBuilder().token(BOT_TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("upload", upload))
     app.add_handler(CommandHandler("listen", listen))
     app.add_handler(CommandHandler("points", points))
     app.add_handler(CommandHandler("help", help_command))
-
-    await app.run_polling()
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling()
+    await app.updater.idle()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())  # ✅ Safely runs in Render or similar platforms
