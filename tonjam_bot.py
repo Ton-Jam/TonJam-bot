@@ -1,5 +1,7 @@
 import logging
 import os
+import signal
+import asyncio
 import aiosqlite
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
@@ -17,6 +19,10 @@ PORT = int(os.getenv("PORT", 8443))  # Render assigns PORT dynamically
 async def init_db():
     db_path = "/tmp/tonjam.db"
     logger.info(f"Attempting to connect to database at {db_path}")
+    if os.access("/tmp", os.W_OK):
+        logger.info("/tmp is writable")
+    else:
+        logger.error("/tmp is not writable")
     async with aiosqlite.connect(db_path) as db:
         await db.execute("""
             CREATE TABLE IF NOT EXISTS users (
@@ -99,12 +105,19 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Update {update} caused error {context.error}")
 
+# Signal handler for graceful shutdown
+async def shutdown(application):
+    logger.info("Received shutdown signal, stopping application...")
+    await application.stop()
+    await application.updater.stop()
+    logger.info("Application stopped gracefully")
+
 # Entry point
 async def main():
-    await init_db()
+    # Initialize application
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # Handlers
+    # Add handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("upload", upload))
     app.add_handler(CommandHandler("listen", listen))
@@ -112,6 +125,17 @@ async def main():
     app.add_handler(CommandHandler("points", points))
     app.add_handler(CommandHandler("help", help_command))
     app.add_error_handler(error_handler)
+
+    # Initialize database
+    await init_db()
+
+    # Set up signal handlers for graceful shutdown
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        loop.add_signal_handler(
+            sig,
+            lambda: asyncio.create_task(shutdown(app))
+        )
 
     logger.info("TonJam bot is starting...")
 
@@ -128,5 +152,4 @@ async def main():
     await app.updater.idle()
 
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
