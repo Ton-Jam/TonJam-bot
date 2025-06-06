@@ -1,9 +1,8 @@
-from telegram import Update, InputMediaPhoto
+import asyncio
+from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import aiosqlite
-import asyncio
 
-# Your Telegram Bot Token (must be a string)
 BOT_TOKEN = "7591465695:AAFMdgh2tCD7nNvLG2DrODjy7wg8MvEWVoA"
 
 # Initialize database
@@ -19,7 +18,7 @@ async def init_db():
         """)
         await db.commit()
 
-# Start command
+# Commands
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
     async with aiosqlite.connect("tonjam.db") as db:
@@ -36,31 +35,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "You've earned +10 TJ Points for signing up!"
     )
 
-# Upload command
 async def upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🚧 The upload feature is under development. Soon, you'll be able to mint your music as NFTs on TON!"
-    )
+    await update.message.reply_text("🚧 Upload coming soon. You'll be able to mint your music as NFTs on TON!")
 
-# Listen command
 async def listen(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🎧 Streaming feature coming soon. You’ll be able to jam to Web3 tracks straight from Tonjam!"
-    )
+    await update.message.reply_text("🎧 Streaming coming soon. Jam to Web3 tracks on Tonjam!")
 
-# Help command
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "📜 Available commands:\n"
-        "/start - Welcome message\n"
-        "/upload - Upload your music\n"
-        "/listen - Explore music\n"
+        "/start - Welcome\n"
+        "/upload - Upload music\n"
+        "/listen - Listen to music\n"
         "/points - Check your TJ Points\n"
-        "/play - Simulate music play\n"
-        "/help - Show this help message"
+        "/help - Help"
     )
 
-# Points command
 async def points(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
     async with aiosqlite.connect("tonjam.db") as db:
@@ -69,36 +59,19 @@ async def points(update: Update, context: ContextTypes.DEFAULT_TYPE):
             points = row[0] if row else 0
     await update.message.reply_text(f"💰 You have {points} TJ Points.")
 
-# Play command - mock track preview
-async def play(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    track_caption = (
-        "🎵 Now Playing: *TonJam*\n"
-        "Artist: TON\n\n"
-        "❤️ Add to Favorites\n"
-        "⬇️ Download (coming soon)\n"
-        "▶️ Pause | ⏭️ Next\n"
-        "🔁 Repeat | 🔀 Shuffle\n\n"
-        "💬 Use /comments to share your thoughts!"
-    )
+# Main
+async def main():
+    await init_db()
 
-    await update.message.reply_photo(
-        photo="https://cdn.openai.com/chat-assets/snoop-avatar.png",
-        caption=track_caption,
-        parse_mode="Markdown"
-    )
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-# Initialize the bot app
-app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("upload", upload))
+    app.add_handler(CommandHandler("listen", listen))
+    app.add_handler(CommandHandler("points", points))
+    app.add_handler(CommandHandler("help", help_command))
 
-# Add command handlers
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("upload", upload))
-app.add_handler(CommandHandler("listen", listen))
-app.add_handler(CommandHandler("points", points))
-app.add_handler(CommandHandler("help", help_command))
-app.add_handler(CommandHandler("play", play))
+    await app.run_polling()
 
-# Run the bot
-if __name__ == '__main__':
-    asyncio.run(init_db())
-    app.run_polling()
+if __name__ == "__main__":
+    asyncio.run(main())
