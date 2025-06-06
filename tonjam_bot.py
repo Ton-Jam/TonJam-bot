@@ -1,6 +1,6 @@
 import os from telegram import Update, InputMediaPhoto from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes import aiosqlite import asyncio
 
-BOT_TOKEN = 7591465695:AAFMdgh2tCD7nNvLG2DrODjy7wg8MvEWVoA"
+BOT_TOKEN = "7591465695:AAFMdgh2tCD7nNvLG2DrODjy7wg8MvEWVoA"
 
 Initialize database
 
