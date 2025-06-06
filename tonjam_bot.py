@@ -10,12 +10,14 @@ logger = logging.getLogger(__name__)
 
 # Environment variables
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # e.g., https://your-app.onrender.com/webhook
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # e.g., https://your-app.onrender.com
 PORT = int(os.getenv("PORT", 8443))  # Render assigns PORT dynamically
 
 # Initialize DB
 async def init_db():
-    async with aiosqlite.connect("/data/tonjam.db") as db:  # Use /data for Render volume
+    db_path = "/tmp/tonjam.db"
+    logger.info(f"Attempting to connect to database at {db_path}")
+    async with aiosqlite.connect(db_path) as db:
         await db.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
@@ -25,11 +27,12 @@ async def init_db():
             )
         """)
         await db.commit()
+    logger.info("Database initialized successfully")
 
 # /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
-    async with aiosqlite.connect("/data/tonjam.db") as db:
+    async with aiosqlite.connect("/tmp/tonjam.db") as db:
         await db.execute("""
             INSERT OR IGNORE INTO users (telegram_id, username)
             VALUES (?, ?)
@@ -58,7 +61,7 @@ async def listen(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # /points
 async def points(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
-    async with aiosqlite.connect("/data/tonjam.db") as db:
+    async with aiosqlite.connect("/tmp/tonjam.db") as db:
         async with db.execute("SELECT tj_points FROM users WHERE telegram_id = ?", (user.id,)) as cursor:
             row = await cursor.fetchone()
             points = row[0] if row else 0
