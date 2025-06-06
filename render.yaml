@@ -1,11 +1,16 @@
 services:
   - type: web
-    name: tonjam-bot
+    name: TonjamBot
     env: python
     plan: free
     region: oregon
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python tonjam_bot.py"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
     envVars:
       - key: BOT_TOKEN
-        sync: false
+        value: "7591465695:AAFMdgh2tCD7nNvLG2DrODjy7wg8MvEWVoA"
+      - key: WEBHOOK_URL
+        value: "https://tonjambot.onrender.com"  # Update to your Render URL
+      - key: PORT
+        value: 8443
+    autoDeploy: true
