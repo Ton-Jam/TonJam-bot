@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 # Environment variables
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # e.g., https://your-app.onrender.com
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # e.g., https://tonjambot.onrender.com
 PORT = int(os.getenv("PORT", 8443))  # Render assigns PORT dynamically
 
 # Initialize DB
@@ -138,6 +138,7 @@ async def main():
         )
 
     logger.info("TonJam bot is starting...")
+    logger.info(f"Setting webhook with URL: {WEBHOOK_URL}/webhook")
 
     # Set up webhook
     await app.initialize()
